@@ -40,6 +40,9 @@ birthdays = pd.DataFrame({
 birthdays["Description"] = birthdays["Name"] + "'s Birthday"
 birthdays = birthdays.drop(columns=["Name"])  # Remove the "Name" column
 
+# column order
+birthdays = birthdays[["Date", "Description", "Grid Color", "Text Color"]]
+
 # Leave Days
 leave_days = pd.DataFrame({
     "Date": ["12.06.2025", "25.12.2025"],

@@ -11,20 +11,29 @@ def load_data(year, file_path="pycalendar_data.xlsx"):
     """Loads public holidays, special days, birthdays, and leave days from an Excel file."""
     try:
         xls = pd.ExcelFile(file_path)
-        holidays_df = pd.read_excel(xls, "Public_Holidays")
-        special_days_df = pd.read_excel(xls, "Special_Days")
-        birthdays_df = pd.read_excel(xls, "Birthdays")
-        leaves_df = pd.read_excel(xls, "Leave_Days")
         
-        holidays = {row['Date']: (row['Description'], row['Grid Color'], row['Text Color']) for _, row in holidays_df.iterrows()}
-        special_days = {row['Date']: (row['Description'], row['Grid Color'], row['Text Color']) for _, row in special_days_df.iterrows()}
-        leaves = {row['Date']: (row['Description'], row['Grid Color'], row['Text Color']) for _, row in leaves_df.iterrows()}
-        birthdays = {row['Date'][:5]: (f"{row['Description']}", row['Grid Color'], row['Text Color']) for _, row in birthdays_df.iterrows()}
+        def read_sheet(sheet_name):
+            """Reads a sheet if it exists, otherwise returns an empty DataFrame."""
+            if sheet_name in xls.sheet_names:
+                return pd.read_excel(xls, sheet_name)
+            else:
+                return pd.DataFrame()
+
+        holidays_df = read_sheet("Public_Holidays")
+        special_days_df = read_sheet("Special_Days")
+        birthdays_df = read_sheet("Birthdays")
+        leaves_df = read_sheet("Leave_Days")
+        
+        holidays = {row['Date']: (row['Description'], row['Grid Color'], row['Text Color']) for _, row in holidays_df.iterrows()} if not holidays_df.empty else {}
+        special_days = {row['Date']: (row['Description'], row['Grid Color'], row['Text Color']) for _, row in special_days_df.iterrows()} if not special_days_df.empty else {}
+        leaves = {row['Date']: (row['Description'], row['Grid Color'], row['Text Color']) for _, row in leaves_df.iterrows()} if not leaves_df.empty else {}
+        birthdays = {row['Date'][:5]: (f"{row['Description']}", row['Grid Color'], row['Text Color']) for _, row in birthdays_df.iterrows()} if not birthdays_df.empty else {}
         
         return holidays, special_days, birthdays, leaves
     except FileNotFoundError:
         print("Excel file not found! Please check the file location.")
         return {}, {}, {}, {}
+
 
 def create_calendar(year, holidays, special_days, birthdays, leaves, filename="calendar_A4.pdf", page_size="A4"):
     """Creates a calendar in the specified format (A4 or horizontal A0)."""
